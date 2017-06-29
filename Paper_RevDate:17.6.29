@@ -1,0 +1,76 @@
+# PAPER - the best way to put your creations on paper
+
+# Authored by: Mark & Scott Guerrieri
+# Last Revised 2017.6.29
+
+####### Start Imports #######
+
+import os
+import PyPDF2
+import signal
+import subprocess
+import sys
+import tempfile
+from PyPDF2 import PdfFileReader, PdfFileMerger, PdfFileWriter
+import PyQt5
+from PyQt5 import QtGui
+from PyQt5.QtCore import pyqtSlot
+from PyQt5.QtGui import  QIcon, QFont
+from PyQt5.QtWidgets import (QAction, QApplication, QMainWindow, QDesktopWidget, QWidget, QTabWidget,QComboBox, QDialog,
+        QDialogButtonBox, QFormLayout, QGridLayout, QGroupBox, QHBoxLayout,
+        QLabel, QLineEdit, QMenu, QMenuBar, QPushButton, QSpinBox, QTextEdit,
+        QVBoxLayout, QToolTip)
+print('Program Started Successful')
+
+####### TouchUp Document for Print or Publish #######
+
+def crop_operation( document, size, trim ):
+    doc = PdfFileReader(open(document, "rb"))
+    output = PdfFileWriter()
+
+    numPages = doc.getNumPages()
+    print("document has %s pages." % numPages)
+
+    for i in range(numPages):
+        page = doc.getPage(i)
+        print(page.mediaBox.getUpperRight_x(), page.mediaBox.getUpperRight_y())
+        page.trimBox.lowerLeft = (trim, trim)
+        page.trimBox.upperRight = (200+trim, 200+trim)
+        page.cropBox.lowerLeft = (50-trim, 50-trim)
+        page.cropBox.upperRight = (200, 200)
+        output.addPage(page)
+
+    outputStream = open("tmp.pdf", "wb")
+    output.write(outputStream)
+    outputStream.close()
+####### Get List of Printers #######
+    
+def list_printers():
+    with tempfile.TemporaryFile() as printers:
+        list_printers = subprocess.Popen([ 'lpstat', '-p' ], stdout=printers)
+        list_printers.wait()
+        printers.seek(0)
+        i = 0
+        printer = []
+        for line in printers:
+            printer.append(line)
+            print(printer[i])
+            i = i + 1
+        print(i)
+        return printer
+    
+####### Get Printer Options #######
+    
+def printer_options(printer):
+    with tempfile.TemporaryFile() as options:
+        check_options = subprocess.Popen([ 'lpoptions', '-d', printer, '-l' ], stdout=options)
+        check_options.wait()
+        options.seek(0)
+        i = 0
+        option = []
+        for line in options:
+            option.append(line)
+            print(option[i])
+            i = i + 1
+        print(i)
+        return option
